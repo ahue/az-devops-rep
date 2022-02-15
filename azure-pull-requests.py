@@ -25,11 +25,23 @@ def get_prs(config_file: str, project: str, outfile: str):
     sc = GitPullRequestSearchCriteria()
     sc.status = "all"
 
-    prs = client.get_pull_requests_by_project(project=project, search_criteria=sc)
-    prl = [pr.as_dict() for pr in prs]
+    
+    skip = 0
+    top = 100
+    prl = []
+    while True:
+
+        prs = client.get_pull_requests_by_project(project=project, 
+            search_criteria=sc, skip=skip, top=top)
+        skip += top
+        if not len(prs) > 0: 
+            break
+
+        prl += [pr.as_dict() for pr in prs]
 
     with open(outfile, "w") as outfile:
         outfile.write(json.dumps(prl))
+        print(f"exported {len(prl)} PRs")
 
 if __name__ == "__main__":
     print(sys.argv)
